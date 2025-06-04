@@ -247,7 +247,7 @@ function echo5_chatbot_get_openai_response( $user_message, $user_name, $api_key 
     $model   = 'gpt-3.5-turbo';
 
     $faq_text = '';
-    $faq_file = plugin_dir_path( __FILE__ ) . 'bhumi-faqs.txt';
+    $faq_file = plugin_dir_path( __FILE__ ) . 'echo-faqs.txt';
     if ( file_exists( $faq_file ) ) {
         $faq_text = file_get_contents( $faq_file );
     }

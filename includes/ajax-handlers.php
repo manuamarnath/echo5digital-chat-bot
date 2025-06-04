@@ -51,7 +51,7 @@ function echo5_chatbot_handle_message() {
     }
 
     // Get FAQ content for context
-    $faq_file = ECHO5_CHATBOT_PLUGIN_DIR . 'bhumi-faqs.txt';
+    $faq_file = ECHO5_CHATBOT_PLUGIN_DIR . 'echo-faqs.txt';
     $faq_text = file_exists($faq_file) ? file_get_contents($faq_file) : '';
 
     // Prepare OpenAI API request

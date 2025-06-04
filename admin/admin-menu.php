@@ -313,7 +313,7 @@ if ( ! function_exists( 'echo5_chatbot_ai_training_page_html' ) ) {
 		// Handle form submission
 		if (isset($_POST['echo5_faq_content']) && check_admin_referer('echo5_save_faq')) {
 			$content = wp_unslash($_POST['echo5_faq_content']);
-			$file = ECHO5_CHATBOT_PLUGIN_DIR . 'bhumi-faqs.txt';
+			$file = ECHO5_CHATBOT_PLUGIN_DIR . 'echo-faqs.txt';
 			
 			if (file_put_contents($file, $content) !== false) {
 				add_settings_error(
@@ -334,7 +334,7 @@ if ( ! function_exists( 'echo5_chatbot_ai_training_page_html' ) ) {
 
 		// Get current FAQ content
 		$faq_content = '';
-		$faq_file = ECHO5_CHATBOT_PLUGIN_DIR . 'bhumi-faqs.txt';
+		$faq_file = ECHO5_CHATBOT_PLUGIN_DIR . 'echo-faqs.txt';
 		if (file_exists($faq_file)) {
 			$faq_content = file_get_contents($faq_file);
 		}
