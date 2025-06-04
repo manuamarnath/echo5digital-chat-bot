@@ -1,0 +1,490 @@
+:root {
+    --echo5-chat-primary-color: #567c48;
+    --echo5-chat-secondary-color: #f1f1f1;
+    --echo5-chat-text-color: #333;
+}
+
+#echo5-chat-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 380px;
+    height: 600px;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 5px 40px rgba(0,0,0,0.16);
+    border-radius: 12px;
+    overflow: hidden;
+    z-index: 9999;
+    transition: all 0.3s ease-in-out;
+}
+
+#echo5-chat-container.minimized {
+    width: 100px;
+    height: 48px;
+    margin-bottom: 20px;
+    padding: 0;
+    background-color: #567c48;
+    border-radius: 24px;
+    cursor: pointer;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+#echo5-chat-container.minimized:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    background-color: #618853;
+}
+
+#echo5-chat-container.minimized #echo5-chat-header {
+    font-size-adjust: cap-height 0.5;
+    height: 48px;
+    padding: 0 14px;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Add this new rule to explicitly hide name prompt in minimized state */
+#echo5-chat-container.minimized #echo5-chat-name-prompt {
+    display: none !important;
+}
+
+#echo5-chat-container.minimized #echo5-minimize-button,
+#echo5-chat-container.minimized #echo5-chat-messages,
+#echo5-chat-container.minimized #echo5-chat-input-area,
+#echo5-chat-container.minimized #echo5-chat-name-prompt,
+#echo5-chat-container.minimized #echo5-live-agent-toggle,
+#echo5-chat-container.minimized #echo5-change-name-button {
+    display: none;
+}
+
+#echo5-minimize-button {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 24px;
+    line-height: 24px;
+    padding: 0 8px;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#echo5-minimize-button:hover {
+    opacity: 1;
+}
+
+#echo5-chat-header {
+    background-color: #567c48;
+    color: white;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+}
+
+#echo5-chat-header h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    margin-right: 90px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+#echo5-live-agent-button,
+#echo5-change-name-button {
+    padding: 6px 10px;
+    font-size: 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+#echo5-live-agent-button {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+#echo5-live-agent-button:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+#echo5-change-name-button {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+#echo5-change-name-button:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+#echo5-minimize-button {
+    padding: 4px 8px;
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+    margin-left: 4px;
+    flex-shrink: 0;
+}
+
+#echo5-minimize-button:hover {
+    opacity: 1;
+}
+
+#echo5-chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background-color: #fff;
+}
+
+.echo5-message {
+    margin-bottom: 15px;
+    max-width: 85%;
+    padding: 12px 16px;
+    border-radius: 15px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.echo5-bot-message {
+    background: white;
+    border: 1px solid #cd9d4b;
+    margin-right: auto;
+    border-bottom-left-radius: 4px;
+}
+
+.echo5-user-message {
+    background-color: #567c48;
+    color: white;
+    margin-left: auto;
+    border-bottom-right-radius: 4px;
+}
+
+.echo5-message-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.echo5-message strong {
+    font-size: 1rem;
+    opacity: 0.8;
+}
+
+#echo5-chat-input-area {
+    padding: 15px;
+    background-color: #fff;
+    border-top: 1px solid #eee;
+}
+
+#echo5-chat-input-area {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+#echo5-live-agent-toggle {
+    padding: 6px 10px;
+    font-size: 12px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-right: 8px;
+}
+
+#echo5-live-agent-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+#echo5-live-agent-toggle.active {
+    background-color: #cd9d4b;
+}
+
+#echo5-chat-container.minimized #echo5-live-agent-toggle {
+    display: none;
+}
+
+#echo5-chat-message-input {
+    width: calc(100% - 100px);
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    font-size: 14px;
+    outline: none;
+}
+
+#echo5-send-message-button {
+    padding: 8px 20px;
+    margin-left: 8px;
+    background-color: #cd9d4b;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+#echo5-send-message-button:hover {
+    background-color: #aa8550;
+}
+
+#echo5-chat-name-prompt {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 32px;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    width: 80%;
+    max-width: 300px;
+    z-index: 10000;
+    display: none;
+    text-align: center;
+}
+
+#echo5-chat-name-prompt p {
+    color: #333;
+    font-size: 16px;
+    margin: 0 0 20px;
+    line-height: 1.4;
+}
+
+#echo5-user-name-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #cd9d4b;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    font-size: 15px;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+#echo5-user-name-input:focus {
+    border-color: #567c48;
+    box-shadow: 0 0 0 3px rgba(86, 124, 72, 0.1);
+}
+
+#echo5-submit-name-button {
+    width: 100%;
+    padding: 14px 24px;
+    background-color: #567c48;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#echo5-submit-name-button:hover {
+    background-color: #618853;
+    transform: translateY(-1px);
+}
+
+#echo5-submit-name-button:active {
+    transform: translateY(0);
+}
+
+#echo5-chat-container:not(.minimized) #echo5-chat-name-prompt {
+    display: block; /* Show only when container is not minimized and JS shows it */
+}
+
+/* Speech recognition toggle button */
+#echo5-speech-toggle {
+    padding: 8px;
+    background: transparent;
+    border: 1px solid #e0e0e0;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#echo5-speech-toggle:hover {
+    background-color: #f5f5f5;
+}
+
+#echo5-chat-controls {
+    /* border-top: 1px solid #eee;*/
+    /*padding: 10px;*/
+    background: #fff;
+}
+
+/* Simple scrollbar for webkit browsers */
+#echo5-chat-messages::-webkit-scrollbar {
+  width: 6px;
+}
+#echo5-chat-messages::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+#echo5-chat-messages::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+#echo5-chat-messages::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 480px) {
+    #echo5-chat-container {
+        width: 300px;
+        height: 550px;
+        right: 0;
+        bottom: 0;
+        border-radius: 0;
+        max-height: 100vh;
+    }
+
+    #echo5-chat-container.minimized {
+        width: 100px;
+        height: 48px;
+        bottom: 20px;
+        right: 20px;
+       /* left: 20px; */
+        border-radius: 24px;
+    }
+
+    #echo5-chat-header {
+        padding: 10px 16px;
+    }
+
+    .echo5-message {
+        max-width: 85%;
+        padding: 10px 14px;
+        font-size: 15px;
+    }
+
+    #echo5-chat-input-area {
+        padding: 12px;
+        position: sticky;
+        bottom: 0;
+        background: #fff;
+    }
+
+    #echo5-chat-message-input {
+        font-size: 16px;
+        padding: 12px;
+    }
+
+    #echo5-send-message-button {
+        padding: 8px 16px;
+        font-size: 15px;
+    }
+
+    #echo5-chat-name-prompt {
+        width: calc(100% - 32px);
+        padding: 24px;
+        margin: 16px;
+        max-width: none;
+    }
+}
+
+/* Landscape mode adjustments */
+@media (max-width: 850px) and (orientation: landscape) {
+    #echo5-chat-container {
+        height: 100vh;
+    }
+
+    #echo5-chat-messages {
+        height: calc(100vh - 100px);
+    }
+
+    .echo5-message {
+        max-width: 70%;
+    }
+}
+
+/* Medium-sized devices */
+@media (min-width: 481px) and (max-width: 768px) {
+    #echo5-chat-container {
+        width: 85%;
+        right: 10px;
+        max-height: 80vh;
+        bottom: 10px;
+    }
+
+    #echo5-chat-container.minimized {
+        width: 100px;
+        right: 20px;
+        bottom: 20px;
+    }
+    
+    .echo5-message {
+        max-width: 80%;
+    }
+}
+
+/* Safe area insets for modern mobile browsers */
+@supports (padding: max(0px)) {
+    #echo5-chat-container {
+        padding-bottom: max(10px, env(safe-area-inset-bottom));
+        bottom: max(0px, env(safe-area-inset-bottom));
+    }
+    
+    #echo5-chat-input-area {
+        padding-bottom: max(15px, env(safe-area-inset-bottom));
+    }
+}
+
+/* Typing indicator styles */
+.echo5-typing-indicator {
+    display: none;
+    padding: 8px 12px;
+    margin-bottom: 15px;
+    max-width: 85%;
+    margin-right: auto;
+}
+
+.echo5-typing-indicator span {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background-color: #cd9d4b;
+    opacity: 0.8;
+    border-radius: 50%;
+    margin-right: 4px;
+    animation: echo5-typing 1s infinite ease-in-out;
+}
+
+.echo5-typing-indicator span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.echo5-typing-indicator span:nth-child(3) {
+    animation-delay: 0.4s;
+    margin-right: 0;
+}
+
+@keyframes echo5-typing {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
