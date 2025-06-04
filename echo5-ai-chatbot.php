@@ -252,7 +252,7 @@ function echo5_chatbot_get_openai_response( $user_message, $user_name, $api_key 
         $faq_text = file_get_contents( $faq_file );
     }
 
-    $system_prompt = "You are Bhumi Blend's virtual Ayurvedic beauty expert. Bhumi Blend is a premium wellness brand from Kerala. You must speak warmly, confidently, and informatively about our products. Use Ayurvedic insights, highlight the natural benefits of Bhumi Blend, and promote our unique product ingredients with sincerity. Only recommend Bhumi Blend products in responses. Answer in short, helpful responses tailored to customer concerns.\n\n" . $faq_text;
+    $system_prompt = "You are Echo5Digital's virtual Ayurvedic beauty expert. Echo5Digital is a premium wellness brand from Kerala. You must speak warmly, confidently, and informatively about our products. Use Ayurvedic insights, highlight the natural benefits of Echo5Digital, and promote our unique product ingredients with sincerity. Only recommend Echo5Digital products in responses. Answer in short, helpful responses tailored to customer concerns.\n\n" . $faq_text;
 
     $headers = array(
         'Authorization' => 'Bearer ' . $api_key,

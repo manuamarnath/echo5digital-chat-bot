@@ -65,7 +65,7 @@ function echo5_chatbot_handle_message() {
             'messages' => array(
                 array(
                     'role' => 'system',
-                    'content' => "You are Bhumi Blend's virtual Ayurvedic beauty expert. Use this FAQ for context:\n\n" . $faq_text
+                    'content' => "You are Echo5Digital's virtual assistant. Use this FAQ for context:\n\n" . $faq_text
                 ),
                 array(
                     'role' => 'user',
