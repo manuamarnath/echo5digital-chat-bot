@@ -76,6 +76,16 @@ function echo5_chatbot_admin_menu() {
 		'echo5_chatbot_ai_training',                                    // Menu slug
 		'echo5_chatbot_ai_training_page_html'                          // Function to display page content
 	);
+
+	// Add submenu page for Experimental Features
+	add_submenu_page(
+		'echo5_chatbot_main_settings',
+		esc_html__('Experimental Features', 'echo5-ai-chatbot'),
+		esc_html__('Experimental', 'echo5-ai-chatbot'),
+		'manage_options',
+		'echo5_chatbot_experimental',
+		'echo5_chatbot_experimental_page_html'
+	);
 }
 add_action( 'admin_menu', 'echo5_chatbot_admin_menu' );
 
@@ -360,6 +370,40 @@ if ( ! function_exists( 'echo5_chatbot_ai_training_page_html' ) ) {
 					</tr>
 				</table>
 				<?php submit_button(__('Save FAQ Content', 'echo5-ai-chatbot')); ?>
+			</form>
+		</div>
+		<?php
+	}
+}
+
+
+if ( ! function_exists( 'echo5_chatbot_experimental_page_html' ) ) {
+	/**
+	 * Renders the HTML for the Experimental Features page.
+	 *
+	 * This page allows administrators to configure experimental features for the AI Chatbot.
+	 *
+	 * @since 0.1.0
+	 */
+	function echo5_chatbot_experimental_page_html() {
+		if (!current_user_can('manage_options')) {
+			wp_die(esc_html__('You do not have sufficient permissions to access this page.', 'echo5-ai-chatbot'));
+		}
+		?>
+		<div class="wrap">
+			<h1><?php echo esc_html(get_admin_page_title()); ?></h1>
+			
+			<div class="notice notice-warning">
+				<p><strong><?php esc_html_e('Warning:', 'echo5-ai-chatbot'); ?></strong> 
+				<?php esc_html_e('These features are experimental and may not work as expected.', 'echo5-ai-chatbot'); ?></p>
+			</div>
+
+			<form method="post" action="options.php">
+				<?php
+				settings_fields('echo5_chatbot_experimental_options');
+				do_settings_sections('echo5_chatbot_experimental');
+				submit_button(__('Save Experimental Settings', 'echo5-ai-chatbot'));
+				?>
 			</form>
 		</div>
 		<?php

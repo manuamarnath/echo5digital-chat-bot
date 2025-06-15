@@ -22,6 +22,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize variables
     let userName = localStorage.getItem('echo5_user_name') || '';
     let isMinimized = true; // Start minimized
+    let checkResponseInterval = null;
+    let chatSessionId = 'session_' + Date.now();
 
     // Handle clicks on the chat container when minimized
     elements.chatContainer.addEventListener('click', function(e) {
@@ -73,16 +75,55 @@ document.addEventListener('DOMContentLoaded', function() {
     let isLiveAgent = false;
     let welcomeBackTemplate = echo5_chatbot_data.default_welcome_known_user || '';
 
-    // Update event handler for live agent toggle
-    elements.liveAgentToggle = document.getElementById('echo5-live-agent-toggle');
-    if (elements.liveAgentToggle) {
-        elements.liveAgentToggle.addEventListener('click', function() {
-            isLiveAgent = !isLiveAgent;
-            this.textContent = isLiveAgent ? 'Switch to AI' : 'Switch to Live Support';
-            this.classList.toggle('active', isLiveAgent);
-            displayBotMessage(isLiveAgent ? 
-                'Switching to live support mode. Please wait while we connect you...' : 
-                'Switching back to AI assistant mode.');
+    let checkResponsesInterval = null;
+
+    function startCheckingResponses() {
+        // Clear any existing interval
+        if (checkResponsesInterval) {
+            clearInterval(checkResponsesInterval);
+        }
+
+        checkResponsesInterval = setInterval(() => {
+            jQuery.ajax({
+                url: echo5_chatbot_data.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'echo5_check_live_agent_responses',
+                    nonce: echo5_chatbot_data.send_message_nonce,
+                    session_id: chatSessionId
+                },
+                success: function(response) {
+                    if (response.success && response.data.messages && response.data.messages.length > 0) {
+                        response.data.messages.forEach(function(msg) {
+                            displayBotMessage(msg.message);
+                        });
+                    }
+                }
+            });
+        }, 5000);
+    }
+
+    // Live agent toggle functionality
+    const liveAgentToggle = document.getElementById('echo5-live-agent-toggle');
+    if (liveAgentToggle) {
+        liveAgentToggle.addEventListener('click', function() {
+            this.classList.toggle('active');
+            isLiveAgent = this.classList.contains('active');
+            
+            this.innerHTML = `
+                <span class="echo5-live-agent-indicator"></span>
+                ${isLiveAgent ? 'Switch to AI' : 'Switch to Live Agent'}
+            `;
+            
+            if (isLiveAgent) {
+                displayBotMessage('Connecting to live agent...');
+                startCheckingResponses();
+            } else {
+                displayBotMessage('Switching back to AI assistant mode.');
+                if (checkResponsesInterval) {
+                    clearInterval(checkResponsesInterval);
+                }
+            }
         });
     }
 
@@ -146,7 +187,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Update sendMessage function to handle live agent
+    // Update sendMessage function
     async function sendMessage() {
         const message = elements.messageInput.value.trim();
         if (!message) return;
@@ -171,7 +212,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     nonce: echo5_chatbot_data.send_message_nonce,
                     message: message,
                     user_name: userName,
-                    is_live_agent: isLiveAgent
+                    is_live_agent: isLiveAgent,
+                    session_id: chatSessionId
                 }
             });
 
@@ -179,12 +221,13 @@ document.addEventListener('DOMContentLoaded', function() {
             typingIndicator.remove();
 
             if (response.success) {
-                displayBotMessage(response.data.reply);
+                if (!isLiveAgent) {
+                    displayBotMessage(response.data.reply);
+                }
             } else {
                 displayBotMessage('Error: ' + (response.data?.message || 'Something went wrong'));
             }
         } catch (error) {
-            // Remove typing indicator on error
             typingIndicator.remove();
             console.error('AJAX error:', error);
             displayBotMessage('Error: Could not connect to the server.');

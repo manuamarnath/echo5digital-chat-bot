@@ -105,29 +105,29 @@ function echo5_chatbot_api_key_field_callback() {
  * @since 0.1.2
  */
 function echo5_chatbot_register_api_key_settings() {
-	// Register a setting for the API key.
-	register_setting(
-		'echo5_chatbot_api_key_settings_group', // Option group name.
-		'echo5_chatbot_api_key',                // Option name (stored in wp_options).
-		'echo5_chatbot_sanitize_api_key'        // Sanitize callback function.
-	);
+    // Register a setting for the API key.
+    register_setting(
+        'echo5_chatbot_api_key_settings_group',
+        'echo5_chatbot_api_key',
+        'echo5_chatbot_sanitize_api_key'
+    );
 
-	// Add a settings section for API Key Configuration.
-	add_settings_section(
-		'echo5_chatbot_api_key_section',        // ID of the section.
-		esc_html__( 'API Key Configuration', 'echo5-ai-chatbot' ), // Title of the section.
-		'echo5_chatbot_api_key_section_callback',// Callback function to render the section description.
-		'echo5_chatbot_main_settings'           // Page slug where this section will be shown.
-	);
+    // Add a settings section for API Key Configuration.
+    add_settings_section(
+        'echo5_chatbot_api_key_section',
+        esc_html__('API Key Configuration', 'echo5-ai-chatbot'),
+        'echo5_chatbot_api_key_section_callback',
+        'echo5_chatbot_main_settings'
+    );
 
-	// Add API Key settings field.
-	add_settings_field(
-		'echo5_chatbot_api_key_field',          // ID of the field.
-		esc_html__( 'OpenAI API Key', 'echo5-ai-chatbot' ), // Title of the field.
-		'echo5_chatbot_api_key_field_callback', // Callback function to render the field.
-		'echo5_chatbot_main_settings',          // Page slug.
-		'echo5_chatbot_api_key_section'         // Section ID.
-	);
+    // Add API Key settings field.
+    add_settings_field(
+        'echo5_chatbot_api_key_field',
+        esc_html__('OpenAI API Key', 'echo5-ai-chatbot'),
+        'echo5_chatbot_api_key_field_callback',
+        'echo5_chatbot_main_settings',
+        'echo5_chatbot_api_key_section'  // Fixed: Removed the comma and extra parameter
+    );
 }
 add_action( 'admin_init', 'echo5_chatbot_register_api_key_settings' );
 
@@ -171,6 +171,33 @@ function echo5_chatbot_register_appearance_settings() {
 		'echo5_chatbot_secondary_color_callback',   // Callback function to render the field.
 		'echo5_chatbot_appearance_settings',        // Page slug.
 		'echo5_chatbot_color_section'               // Section ID.
+	);
+
+	// Add Bot Message Color settings field
+	add_settings_field(
+		'echo5_chatbot_bot_message_color',
+		esc_html__('Bot Message Color', 'echo5-ai-chatbot'),
+		'echo5_chatbot_bot_message_color_callback',
+		'echo5_chatbot_appearance_settings',
+		'echo5_chatbot_color_section'
+	);
+
+	// Add User Message Color settings field
+	add_settings_field(
+		'echo5_chatbot_user_message_color',
+		esc_html__('User Message Color', 'echo5-ai-chatbot'),
+		'echo5_chatbot_user_message_color_callback',
+		'echo5_chatbot_appearance_settings',
+		'echo5_chatbot_color_section'
+	);
+
+	// Add Header Background Color settings field
+	add_settings_field(
+		'echo5_chatbot_header_bg_color',
+		esc_html__('Header Background Color', 'echo5-ai-chatbot'),
+		'echo5_chatbot_header_bg_color_callback',
+		'echo5_chatbot_appearance_settings',
+		'echo5_chatbot_color_section'
 	);
 
 	// Add a settings section for the Welcome Message.
@@ -217,8 +244,11 @@ function echo5_chatbot_sanitize_appearance_options( $input ) {
 	$defaults        = array(
 		'primary_color'       => '#0073aa',
 		'secondary_color'     => '#e5e5e5',
+		'bot_message_color'   => '#cd9d4b',
+		'user_message_color'  => '#567c48',
+		'header_bg_color'     => '#567c48',
 		'welcome_message'     => __( 'Hello, <strong>%userName%</strong>! How can I help you? (You can change your name using /name [new_name])', 'echo5-ai-chatbot' ),
-		'chatbot_header_text' => __( 'AI Chatbot', 'echo5-ai-chatbot' ),
+		'chatbot_header_text' => __( 'Live Chat', 'echo5-ai-chatbot' ),
 	);
 
 	// Sanitize primary color.
@@ -233,6 +263,25 @@ function echo5_chatbot_sanitize_appearance_options( $input ) {
 		$sanitized_input['secondary_color'] = sanitize_hex_color( $input['secondary_color'] );
 	} else {
 		$sanitized_input['secondary_color'] = $defaults['secondary_color'];
+	}
+
+	// Sanitize new color options
+	if ( isset( $input['bot_message_color'] ) ) {
+		$sanitized_input['bot_message_color'] = sanitize_hex_color( $input['bot_message_color'] );
+	} else {
+		$sanitized_input['bot_message_color'] = $defaults['bot_message_color'];
+	}
+
+	if ( isset( $input['user_message_color'] ) ) {
+		$sanitized_input['user_message_color'] = sanitize_hex_color( $input['user_message_color'] );
+	} else {
+		$sanitized_input['user_message_color'] = $defaults['user_message_color'];
+	}
+
+	if ( isset( $input['header_bg_color'] ) ) {
+		$sanitized_input['header_bg_color'] = sanitize_hex_color( $input['header_bg_color'] );
+	} else {
+		$sanitized_input['header_bg_color'] = $defaults['header_bg_color'];
 	}
 
 	// Sanitize welcome message.
@@ -297,6 +346,47 @@ function echo5_chatbot_secondary_color_callback() {
 	echo '<p class="description">' . esc_html__( 'Used for bot message backgrounds.', 'echo5-ai-chatbot' ) . '</p>';
 }
 
+/**
+ * Renders the input field for the Bot Message Color option.
+ *
+ * Uses the WordPress color picker.
+ *
+ * @since 0.1.0
+ */
+function echo5_chatbot_bot_message_color_callback() {
+    $options = get_option('echo5_chatbot_appearance_options', array('bot_message_color' => '#cd9d4b'));
+    $color = isset($options['bot_message_color']) ? $options['bot_message_color'] : '#cd9d4b';
+    echo '<input type="text" name="echo5_chatbot_appearance_options[bot_message_color]" value="' . esc_attr($color) . '" class="echo5-color-picker" />';
+    echo '<p class="description">' . esc_html__('Color for bot message borders.', 'echo5-ai-chatbot') . '</p>';
+}
+
+/**
+ * Renders the input field for the User Message Color option.
+ *
+ * Uses the WordPress color picker.
+ *
+ * @since 0.1.0
+ */
+function echo5_chatbot_user_message_color_callback() {
+    $options = get_option('echo5_chatbot_appearance_options', array('user_message_color' => '#567c48'));
+    $color = isset($options['user_message_color']) ? $options['user_message_color'] : '#567c48';
+    echo '<input type="text" name="echo5_chatbot_appearance_options[user_message_color]" value="' . esc_attr($color) . '" class="echo5-color-picker" />';
+    echo '<p class="description">' . esc_html__('Background color for user messages.', 'echo5-ai-chatbot') . '</p>';
+}
+
+/**
+ * Renders the input field for the Header Background Color option.
+ *
+ * Uses the WordPress color picker.
+ *
+ * @since 0.1.0
+ */
+function echo5_chatbot_header_bg_color_callback() {
+    $options = get_option('echo5_chatbot_appearance_options', array('header_bg_color' => '#567c48'));
+    $color = isset($options['header_bg_color']) ? $options['header_bg_color'] : '#567c48';
+    echo '<input type="text" name="echo5_chatbot_appearance_options[header_bg_color]" value="' . esc_attr($color) . '" class="echo5-color-picker" />';
+    echo '<p class="description">' . esc_html__('Background color for chat header.', 'echo5-ai-chatbot') . '</p>';
+}
 
 /**
  * Renders the description for the Welcome Message section.
@@ -336,6 +426,87 @@ function echo5_chatbot_header_text_field_callback() {
 }
 
 /**
+ * Registers plugin settings, sections, and fields for Telegram configuration.
+ */
+function echo5_chatbot_register_telegram_settings() {
+    // Register Telegram bot settings
+    register_setting(
+        'echo5_chatbot_experimental_options',
+        'echo5_chatbot_telegram_bot_token',
+        array(
+            'type' => 'string',
+            'sanitize_callback' => 'sanitize_text_field',
+            'default' => ''
+        )
+    );
+    
+    register_setting(
+        'echo5_chatbot_experimental_options',
+        'echo5_chatbot_telegram_chat_id',
+        array(
+            'type' => 'string',
+            'sanitize_callback' => 'sanitize_text_field',
+            'default' => ''
+        )
+    );
+
+    // Add settings section and fields
+    add_settings_section(
+        'echo5_chatbot_telegram_section',
+        __('Telegram Integration', 'echo5-ai-chatbot'),
+        'echo5_chatbot_telegram_section_callback',
+        'echo5_chatbot_experimental'
+    );
+
+    add_settings_field(
+        'echo5_chatbot_telegram_bot_token',
+        __('Telegram Bot Token', 'echo5-ai-chatbot'),
+        'echo5_chatbot_telegram_bot_token_callback',
+        'echo5_chatbot_experimental',
+        'echo5_chatbot_telegram_section'
+    );
+
+    add_settings_field(
+        'echo5_chatbot_telegram_chat_id',
+        __('Telegram Chat ID', 'echo5-ai-chatbot'),
+        'echo5_chatbot_telegram_chat_id_callback',
+        'echo5_chatbot_experimental',
+        'echo5_chatbot_telegram_section'
+    );
+}
+
+/**
+ * Renders the description for the Telegram Integration section.
+ *
+ * @since 0.1.0
+ */
+function echo5_chatbot_telegram_section_callback() {
+    echo '<p>' . esc_html__( 'Configure your Telegram bot settings here. These settings are used for sending messages to Telegram.', 'echo5-ai-chatbot' ) . '</p>';
+}
+
+/**
+ * Renders the input field for the Telegram Bot Token.
+ *
+ * @since 0.1.0
+ */
+function echo5_chatbot_telegram_bot_token_callback() {
+    $bot_token = get_option('echo5_chatbot_telegram_bot_token', '');
+    echo '<input type="text" name="echo5_chatbot_telegram_bot_token" value="' . esc_attr($bot_token) . '" class="regular-text">';
+    echo '<p class="description">' . esc_html__( 'Enter your Telegram bot token here.', 'echo5-ai-chatbot' ) . '</p>';
+}
+
+/**
+ * Renders the input field for the Telegram Chat ID.
+ *
+ * @since 0.1.0
+ */
+function echo5_chatbot_telegram_chat_id_callback() {
+    $chat_id = get_option('echo5_chatbot_telegram_chat_id', '');
+    echo '<input type="text" name="echo5_chatbot_telegram_chat_id" value="' . esc_attr($chat_id) . '" class="regular-text">';
+    echo '<p class="description">' . esc_html__( 'Enter the chat ID where messages will be sent. This is usually your user ID or a group ID.', 'echo5-ai-chatbot' ) . '</p>';
+}
+
+/**
  * Enqueues the WordPress color picker scripts and styles.
  *
  * Only loads on the plugin's Appearance settings page.
@@ -359,3 +530,16 @@ function echo5_chatbot_enqueue_color_picker( $hook_suffix ) {
 	);
 }
 add_action( 'admin_enqueue_scripts', 'echo5_chatbot_enqueue_color_picker' );
+
+// Remove all Telegram-related code and functions
+remove_action('admin_init', 'echo5_chatbot_register_telegram_settings');
+
+if (function_exists('echo5_chatbot_register_telegram_settings')) {
+    remove_action('admin_init', 'echo5_chatbot_register_telegram_settings');
+    
+    // Remove any existing hook
+    global $wp_filter;
+    if (isset($wp_filter['admin_init'])) {
+        remove_filter('admin_init', 'echo5_chatbot_register_telegram_settings', 10);
+    }
+}

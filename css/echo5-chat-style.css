@@ -1,7 +1,10 @@
 :root {
-    --echo5-chat-primary-color: #567c48;
+    --echo5-chat-primary-color: #7f58bf;
     --echo5-chat-secondary-color: #f1f1f1;
     --echo5-chat-text-color: #333;
+    --echo5-chat-header-bg-color: #7f58bf;
+    --echo5-chat-bot-message-color: #7f58bf;
+    --echo5-chat-user-message-color: #7f58bf;
 }
 
 #echo5-chat-container {
@@ -25,7 +28,7 @@
     height: 48px;
     margin-bottom: 20px;
     padding: 0;
-    background-color: #567c48;
+    background-color: #8c35cc;
     border-radius: 24px;
     cursor: pointer;
     box-shadow: 0 2px 12px rgba(0,0,0,0.15);
@@ -36,7 +39,7 @@
 #echo5-chat-container.minimized:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 16px rgba(0,0,0,0.25);
-    background-color: #618853;
+    background-color: #ae51f0;
 }
 
 #echo5-chat-container.minimized #echo5-chat-header {
@@ -84,21 +87,23 @@
 }
 
 #echo5-chat-header {
-    background-color: #567c48;
+    background-color: var(--echo5-chat-header-bg-color);
     color: white;
     padding: 12px 16px;
     display: flex;
     align-items: center;
     gap: 8px;
     flex-wrap: nowrap;
-    justify-content: flex-end;
+    justify-content: space-between;
+    position: relative;
 }
 
 #echo5-chat-header h2 {
+    color: white;
     margin: 0;
     font-size: 24px;
     font-weight: 600;
-    margin-right: 90px;
+    margin-right: auto;
     white-space: nowrap;
     flex-shrink: 0;
 }
@@ -134,8 +139,8 @@
 }
 
 #echo5-minimize-button {
-    padding: 4px 8px;
-    background: transparent;
+    padding: 1.5px 8px;
+    background: white;
     border: none;
     color: white;
     font-size: 20px;
@@ -167,15 +172,16 @@
     line-height: 1.4;
 }
 
-.echo5-bot-message {
+ .echo5-bot-message {
     background: white;
-    border: 1px solid #cd9d4b;
+    border: 1px solid #000;
     margin-right: auto;
     border-bottom-left-radius: 4px;
 }
 
 .echo5-user-message {
-    background-color: #567c48;
+    background-color: #8c35cc;
+    border: 1px solid #000;
     color: white;
     margin-left: auto;
     border-bottom-right-radius: 4px;
@@ -196,32 +202,33 @@
     padding: 15px;
     background-color: #fff;
     border-top: 1px solid #eee;
-}
-
-#echo5-chat-input-area {
     display: flex;
     gap: 8px;
-    margin-bottom: 8px;
 }
 
 #echo5-live-agent-toggle {
-    padding: 6px 10px;
-    font-size: 12px;
-    background: rgba(255, 255, 255, 0.2);
+    position: absolute;
+    right: 60px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.5);
     color: white;
-    border: none;
-    border-radius: 4px;
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 12px;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.3s ease;
     margin-right: 8px;
 }
 
 #echo5-live-agent-toggle:hover {
-    background-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255,255,255,0.3);
 }
 
 #echo5-live-agent-toggle.active {
-    background-color: #cd9d4b;
+    background: #7f58bf;
+    border-color: black;
 }
 
 #echo5-chat-container.minimized #echo5-live-agent-toggle {
@@ -240,7 +247,7 @@
 #echo5-send-message-button {
     padding: 8px 20px;
     margin-left: 8px;
-    background-color: #cd9d4b;
+    background-color: #ae51f0;
     color: white;
     border: none;
     border-radius: 20px;
@@ -250,7 +257,7 @@
 }
 
 #echo5-send-message-button:hover {
-    background-color: #aa8550;
+    background-color: #8c35cc;
 }
 
 #echo5-chat-name-prompt {
@@ -361,7 +368,7 @@
         right: 0;
         bottom: 0;
         border-radius: 0;
-        max-height: 100vh;
+        max-height: 80vh;
     }
 
     #echo5-chat-container.minimized {
@@ -383,14 +390,25 @@
         font-size: 15px;
     }
 
+    #echo5-live-agent-toggle {
+        right: 50px;
+        padding: 4px 8px;
+        font-size: 11px;
+    }
+
     #echo5-chat-input-area {
         padding: 12px;
         position: sticky;
         bottom: 0;
         background: #fff;
+        display: flex;
+        gap: 8px;
+        align-items: center;
     }
 
     #echo5-chat-message-input {
+        flex: 1;
+        min-width: 0;
         font-size: 16px;
         padding: 12px;
     }
@@ -398,6 +416,7 @@
     #echo5-send-message-button {
         padding: 8px 16px;
         font-size: 15px;
+        white-space: nowrap;
     }
 
     #echo5-chat-name-prompt {
@@ -468,7 +487,7 @@
     display: inline-block;
     width: 6px;
     height: 6px;
-    background-color: #cd9d4b;
+    background-color: #8c35cc;
     opacity: 0.8;
     border-radius: 50%;
     margin-right: 4px;

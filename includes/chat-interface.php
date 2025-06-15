@@ -14,11 +14,19 @@ if ( ! defined( 'WPINC' ) ) {
 	die( esc_html__( 'Silence is golden.', 'echo5-ai-chatbot' ) );
 }
 ?>
-<div id="echo5-chat-container" class="echo5-chat-widget minimized">    <div id="echo5-chat-header">
-        <h2>Live Chat</h2>
-        <button type="button" id="echo5-minimize-button" aria-label="<?php esc_attr_e('Minimize Chat', 'echo5-ai-chatbot'); ?>">
-            −
+<div id="echo5-chat-container" class="minimized">
+    <div id="echo5-chat-header">
+        <h2><?php echo esc_html(get_option('echo5_chatbot_header_text', __('Live Chat', 'echo5-ai-chatbot'))); ?></h2>
+        <?php 
+        $experimental_options = get_option('echo5_chatbot_experimental_options', array());
+        if (!empty($experimental_options['live_agent_toggle'])): 
+        ?>
+        <button id="echo5-live-agent-toggle" class="echo5-live-agent-toggle">
+            <span class="echo5-live-agent-indicator"></span>
+            <?php esc_html_e('Switch to Live Agent', 'echo5-ai-chatbot'); ?>
         </button>
+        <?php endif; ?>
+        <button id="echo5-minimize-button" class="echo5-minimize-button"></button>
     </div>
     
     <div id="echo5-chat-messages">

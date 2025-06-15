@@ -55,15 +55,15 @@ function echo5_chatbot_enqueue_scripts() {
 	);
 
 	// Get appearance options with defaults.
-	$default_welcome_message = __( "Hello, <strong>%userName%</strong>! How can I help you today?\n\n<small>Hint: You can change your name anytime using /name [your_new_name]</small>", 'echo5-ai-chatbot' );
-	$default_welcome_known_user = __( "Welcome back, <strong>%userName%</strong>! How can I help you today?\n\n<small>Hint: You can change your name anytime using /name [your_new_name]</small>", 'echo5-ai-chatbot' );
+	$default_welcome_message = __( "Hello, <strong>%userName%</strong>! How can I help you today?\n\n", 'echo5-ai-chatbot' );
+	$default_welcome_known_user = __( "Welcome back, <strong>%userName%</strong>! How can I help you today?\n\n", 'echo5-ai-chatbot' );
 	$appearance_options      = get_option(
 		'echo5_chatbot_appearance_options',
 		array(
 			'primary_color'       => '#0073aa',
 			'secondary_color'     => '#e5e5e5',
 			'welcome_message'     => $default_welcome_message, // This will be used if no custom message is set
-			'chatbot_header_text' => __( 'AI Chatbot', 'echo5-ai-chatbot' ),
+			'chatbot_header_text' => __( 'Live Chat', 'echo5-ai-chatbot' ),
 		)
 	);
 
@@ -112,11 +112,24 @@ function echo5_chatbot_enqueue_scripts() {
 		$primary_color_darker = sprintf( '#%02x%02x%02x', $r, $g, $b );
 	}
 
+	$options = get_option(
+		'echo5_chatbot_appearance_options',
+		array(
+			'primary_color' => '#0073aa',
+			'secondary_color' => '#e5e5e5',
+			'bot_message_color' => '#cd9d4b',
+			'user_message_color' => '#567c48',
+			'header_bg_color' => '#567c48'
+		)
+	);
+
 	$custom_css = "
 		:root {
-			--echo5-chat-primary-color: {$primary_color};
-			--echo5-chat-secondary-color: {$secondary_color};
-			--echo5-chat-primary-color-darker: {$primary_color_darker};
+			--echo5-chat-primary-color: {$options['primary_color']};
+			--echo5-chat-secondary-color: {$options['secondary_color']};
+			--echo5-chat-bot-message-color: {$options['bot_message_color']};
+			--echo5-chat-user-message-color: {$options['user_message_color']};
+			--echo5-chat-header-bg-color: {$options['header_bg_color']};
 		}
 	";
 	wp_add_inline_style( 'echo5-chatbot-style', $custom_css );
@@ -129,6 +142,7 @@ if ( is_admin() ) {
 	error_log('Echo5 AI Chatbot: Loading admin/admin-menu.php...'); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 	require_once ECHO5_CHATBOT_PLUGIN_DIR . 'admin/admin-menu.php';
 	require_once ECHO5_CHATBOT_PLUGIN_DIR . 'admin/settings-page.php';
+	require_once ECHO5_CHATBOT_PLUGIN_DIR . 'admin/experimental-settings.php';
 	error_log('Echo5 AI Chatbot: Admin files loaded.'); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 }
 
@@ -252,7 +266,7 @@ function echo5_chatbot_get_openai_response( $user_message, $user_name, $api_key 
         $faq_text = file_get_contents( $faq_file );
     }
 
-    $system_prompt = "You are Echo5Digital's virtual Ayurvedic beauty expert. Echo5Digital is a premium wellness brand from Kerala. You must speak warmly, confidently, and informatively about our products. Use Ayurvedic insights, highlight the natural benefits of Echo5Digital, and promote our unique product ingredients with sincerity. Only recommend Echo5Digital products in responses. Answer in short, helpful responses tailored to customer concerns.\n\n" . $faq_text;
+    $system_prompt = "You are Echo5 Digital's virtual expert. Echo5 Digital is a results-driven digital marketing agency based in Texas and Kerala. You must speak warmly, confidently, and informatively about our services. Highlight our strengths in SEO, website/app development, PPC advertising, social media marketing, and online reputation management. Promote Echo5 Digital's unique, tailored approach to each client and our affordable, high-impact solutions. Only recommend Echo5 Digital services in responses. Answer in short, helpful responses tailored to customer concerns.\n\n" . $faq_text;
 
     $headers = array(
         'Authorization' => 'Bearer ' . $api_key,
@@ -443,3 +457,69 @@ add_action( 'plugins_loaded', 'echo5_chatbot_load_textdomain' );
 
 // Register activation hook.
 register_activation_hook( __FILE__, 'echo5_chatbot_activate' );
+
+/**
+ * Handles AJAX request to test the OpenAI API key
+ */
+function echo5_test_api_key_handler() {
+    check_ajax_referer('echo5_test_api_key');
+
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error(array('message' => __('Unauthorized access.', 'echo5-ai-chatbot')));
+    }
+
+    $api_key = get_option('echo5_chatbot_api_key');
+    if (empty($api_key)) {
+        wp_send_json_error(array('message' => __('No API key found. Please save an API key first.', 'echo5-ai-chatbot')));
+    }
+
+    $api_url = 'https://api.openai.com/v1/chat/completions';
+    $headers = array(
+        'Authorization' => 'Bearer ' . $api_key,
+        'Content-Type'  => 'application/json',
+    );
+
+    $body = wp_json_encode(array(
+        'model' => 'gpt-3.5-turbo',
+        'messages' => array(
+            array(
+                'role' => 'user',
+                'content' => 'Test message'
+            )
+        ),
+        'max_tokens' => 10
+    ));
+
+    $args = array(
+        'headers' => $headers,
+        'body'    => $body,
+        'timeout' => 15
+    );
+
+    $response = wp_remote_post($api_url, $args);
+
+    if (is_wp_error($response)) {
+        wp_send_json_error(array(
+            'message' => sprintf(
+                __('Error connecting to OpenAI: %s', 'echo5-ai-chatbot'),
+                $response->get_error_message()
+            )
+        ));
+    }
+
+    $response_code = wp_remote_retrieve_response_code($response);
+    $response_body = json_decode(wp_remote_retrieve_body($response), true);
+
+    if ($response_code === 200) {
+        wp_send_json_success(array(
+            'message' => __('API key is valid and working correctly.', 'echo5-ai-chatbot')
+        ));
+    } else {
+        $error_message = isset($response_body['error']['message']) 
+            ? $response_body['error']['message'] 
+            : __('Invalid response from OpenAI.', 'echo5-ai-chatbot');
+        
+        wp_send_json_error(array('message' => $error_message));
+    }
+}
+add_action('wp_ajax_echo5_test_api_key', 'echo5_test_api_key_handler');
