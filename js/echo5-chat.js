@@ -187,55 +187,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Update sendMessage function
-    async function sendMessage() {
-        const message = elements.messageInput.value.trim();
-        if (!message) return;
-
-        displayUserMessage(message, userName);
-        elements.messageInput.value = '';
-        disableChat();
-
-        // Create and show typing indicator
-        const template = document.getElementById('echo5-typing-indicator-template');
-        const typingIndicator = template.content.cloneNode(true).querySelector('.echo5-typing-indicator');
-        elements.chatMessages.appendChild(typingIndicator);
-        typingIndicator.style.display = 'block';
-        elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
-
-        try {
-            const response = await jQuery.ajax({
-                url: echo5_chatbot_data.ajax_url,
-                type: 'POST',
-                data: {
-                    action: 'echo5_chatbot_send_message',
-                    nonce: echo5_chatbot_data.send_message_nonce,
-                    message: message,
-                    user_name: userName,
-                    is_live_agent: isLiveAgent,
-                    session_id: chatSessionId
-                }
-            });
-
-            // Remove typing indicator
-            typingIndicator.remove();
-
-            if (response.success) {
-                if (!isLiveAgent) {
-                    displayBotMessage(response.data.reply);
-                }
-            } else {
-                displayBotMessage('Error: ' + (response.data?.message || 'Something went wrong'));
-            }
-        } catch (error) {
-            typingIndicator.remove();
-            console.error('AJAX error:', error);
-            displayBotMessage('Error: Could not connect to the server.');
-        } finally {
-            enableChat();
-        }
-    }
-
     // Helper function to get personalized message
     function getPersonalizedMessage(template, name) {
         return template.replace(/%userName%/g, name);
@@ -261,6 +212,72 @@ document.addEventListener('DOMContentLoaded', function() {
                 <p>${message}</p>
             </div>`;
         return div;
+    }
+
+    // Add this function after the helper functions
+    function calculateTypingDelay(message) {
+        // Average reading speed (characters per millisecond)
+        const charsPerMs = 0.04;
+        // Base delay of 500ms + calculated time based on message length
+        const delay = 500 + (message.length / charsPerMs);
+        // Cap the maximum delay at 3 seconds
+        return Math.min(delay, 3000);
+    }
+
+    // Modify the sendMessage function
+    async function sendMessage() {
+        const message = elements.messageInput.value.trim();
+        if (!message) return;
+
+        displayUserMessage(message, userName);
+        elements.messageInput.value = '';
+        disableChat();
+
+        const template = document.getElementById('echo5-typing-indicator-template');
+        const typingIndicator = template.content.cloneNode(true).querySelector('.echo5-typing-indicator');
+        elements.chatMessages.appendChild(typingIndicator);
+        typingIndicator.style.display = 'block';
+        elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
+
+        try {
+            const response = await jQuery.ajax({
+                url: echo5_chatbot_data.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'echo5_chatbot_send_message',
+                    nonce: echo5_chatbot_data.send_message_nonce,
+                    message: message,
+                    user_name: userName,
+                    is_live_agent: isLiveAgent,
+                    session_id: chatSessionId
+                }
+            });
+
+            if (response.success) {
+                if (!isLiveAgent) {
+                    // Calculate and apply typing delay
+                    const delay = calculateTypingDelay(response.data.reply);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+            
+            // Remove typing indicator
+            typingIndicator.remove();
+
+            if (response.success) {
+                if (!isLiveAgent) {
+                    displayBotMessage(response.data.reply);
+                }
+            } else {
+                displayBotMessage('Error: ' + (response.data?.message || 'Something went wrong'));
+            }
+        } catch (error) {
+            typingIndicator.remove();
+            console.error('AJAX error:', error);
+            displayBotMessage('Error: Could not connect to the server.');
+        } finally {
+            enableChat();
+        }
     }
 
     // Initialize
