@@ -19,8 +19,10 @@ function echo5_chatbot_handle_message() {
     $session_id = isset($_POST['session_id']) ? sanitize_text_field($_POST['session_id']) : '';
 
     if ($is_live_agent) {
-        $bot_token = "7729425939:AAFiOHIMQ4DL0BfoH1wU3aynNM5PklLgYNw";
-        $chat_id = "806986683";
+        // Get Telegram settings from experimental options
+        $experimental_options = get_option('echo5_chatbot_experimental_options', array());
+        $bot_token = isset($experimental_options['telegram_bot_token']) ? $experimental_options['telegram_bot_token'] : '';
+        $chat_id = isset($experimental_options['telegram_chat_id']) ? $experimental_options['telegram_chat_id'] : '';
 
         if (empty($bot_token) || empty($chat_id)) {
             error_log('Telegram Error: Missing bot token or chat ID');
