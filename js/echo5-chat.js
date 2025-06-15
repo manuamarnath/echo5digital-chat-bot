@@ -24,15 +24,12 @@ document.addEventListener('DOMContentLoaded', function() {
     let isMinimized = true; // Start minimized
     let checkResponseInterval = null;
     let chatSessionId = 'session_' + Date.now();
+    let autoMaximizeTimeout = null;
 
     // Handle clicks on the chat container when minimized
     elements.chatContainer.addEventListener('click', function(e) {
         if (isMinimized) {
-            isMinimized = false;
-            elements.chatContainer.classList.remove('minimized');
-            if (elements.messageInput) {
-                setTimeout(() => elements.messageInput.focus(), 300);
-            }
+            maximizeChat();
             e.stopPropagation();
         }
     });
@@ -43,23 +40,34 @@ document.addEventListener('DOMContentLoaded', function() {
         elements.minimizeButton.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            isMinimized = true;
-            elements.chatContainer.classList.add('minimized');
+            minimizeChat();
         });
     }
 
-    // Modify existing header click handler to avoid conflicts
+    // Modify existing header click handler
     elements.chatHeader.addEventListener('click', function(e) {
         if (!isMinimized || e.target === elements.minimizeButton) {
             return;
         }
+        maximizeChat();
+        e.stopPropagation();
+    });
+
+    // Add helper functions for minimize/maximize
+    function minimizeChat() {
+        isMinimized = true;
+        elements.chatContainer.classList.add('minimized');
+        clearTimeout(autoMaximizeTimeout); // Clear any pending auto-maximize
+    }
+
+    function maximizeChat() {
         isMinimized = false;
         elements.chatContainer.classList.remove('minimized');
         if (elements.messageInput) {
             setTimeout(() => elements.messageInput.focus(), 300);
         }
-        e.stopPropagation();
-    });
+        clearTimeout(autoMaximizeTimeout); // Clear any pending auto-maximize
+    }
 
     // Verify required elements
     const missingElements = Object.entries(elements)
@@ -151,8 +159,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Always start minimized
-        elements.chatContainer.classList.add('minimized');
-        localStorage.setItem('echo5_chat_minimized', 'true');
+        minimizeChat();
+
+        // Set timeout to automatically maximize after 4 seconds
+        autoMaximizeTimeout = setTimeout(() => {
+            maximizeChat();
+        }, 4000);
     }
 
     // Enable/disable chat functions
