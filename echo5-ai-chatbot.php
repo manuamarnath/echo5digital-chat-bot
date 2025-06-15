@@ -1,17 +1,20 @@
 <?php
 /**
-  * Plugin Name: Echo5 Digital AI Chatbot
- * Plugin URI:  https://echo5digital/echo5-ai-chatbot
- * Description: An AI-powered chatbot for WordPress.
- * Version:     3.0
- * Author:      Echo5Digital
- * Author URI:  https://echo5digitsl.com
- * License:     GPL-2.0-or-later
+ * Plugin Name: Echo5 Digital AI Chatbot
+ * Plugin URI: https://github.com/echo5digital/echo5-ai-chatbot
+ * Description: An AI-powered chatbot with OpenAI integration
+ * Version: 0.1.1
+ * Requires at least: 5.6
+ * Requires PHP: 7.4
+ * Author: Echo5 Digital
+ * Author URI: https://echo5digital.com
+ * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: echo5-ai-chatbot
  * Domain Path: /languages
- *
- * @package Echo5_AI_Chatbot
+ * GitHub Plugin URI: echo5digital/echo5-ai-chatbot
+ * GitHub Branch: main
+ * Primary Branch: main
  */
 
 // If this file is called directly, abort.
