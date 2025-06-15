@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Echo5 Digital AI Chatbot
- * Plugin URI: https://github.com/manuamarnath/echo5digital-ai-chatbot
+ * Plugin URI: https://github.com/manuamarnath/echo5digital-chat-bot
  * Description: An AI-powered chatbot with OpenAI integration
  * Version: 0.1.1
  * Requires at least: 5.6
@@ -12,7 +12,7 @@
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: echo5-ai-chatbot
  * Domain Path: /languages
- * GitHub Plugin URI: manuamarnath/echo5digital-ai-chatbot
+ * GitHub Plugin URI: manuamarnath/echo5digital-chat-bot
  * GitHub Branch: main
  * Primary Branch: main
  */
