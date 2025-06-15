@@ -3,9 +3,10 @@
  * Plugin Name: Echo5 Digital AI Chatbot
  * Plugin URI: https://github.com/manuamarnath/echo5digital-chat-bot
  * Description: An AI-powered chatbot with OpenAI integration
- * Version: 0.1.1
+ * Version: 0.1.3
  * Requires at least: 5.6
  * Requires PHP: 7.4
+ * Requires Plugin: github-updater/github-updater.php
  * Author: Echo5 Digital
  * Author URI: https://echo5digital.com
  * License: GPL v2 or later
@@ -14,6 +15,7 @@
  * Domain Path: /languages
  * GitHub Plugin URI: https://github.com/manuamarnath/echo5digital-chat-bot
  * Primary Branch: main
+ * Release Asset: true
  */
 
 // If this file is called directly, abort.
@@ -25,7 +27,7 @@ if ( ! defined( 'WPINC' ) ) {
 error_log('Echo5 AI Chatbot: Loading plugin...'); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 
 // Define plugin constants.
-define( 'ECHO5_CHATBOT_VERSION', '0.1.1' ); // Updated version.
+define( 'ECHO5_CHATBOT_VERSION', '0.1.3' ); // Updated version.
 define( 'ECHO5_CHATBOT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ECHO5_CHATBOT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
