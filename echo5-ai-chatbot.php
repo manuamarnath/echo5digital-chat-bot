@@ -3,7 +3,7 @@
  * Plugin Name: Echo5 Digital AI Chatbot
  * Plugin URI: https://github.com/manuamarnath/echo5digital-chat-bot
  * Description: An AI-powered chatbot with OpenAI integration
- * Version: 0.1.4
+ * Version: 0.1.1
  * Requires at least: 5.6
  * Requires PHP: 7.4
  * Author: Echo5 Digital
@@ -12,6 +12,7 @@
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: echo5-ai-chatbot
  * Domain Path: /languages
+ * Update URI: https://github.com/manuamarnath/echo5digital-chat-bot
  */
 
 // If this file is called directly, abort.
@@ -20,13 +21,13 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 // Define plugin constants.
-define( 'ECHO5_CHATBOT_VERSION', '0.1.4' );
+define( 'ECHO5_CHATBOT_VERSION', '0.1.1' );
 define( 'ECHO5_CHATBOT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 
 // Initialize the updater
 if (is_admin()) {
     require_once ECHO5_CHATBOT_PLUGIN_DIR . 'includes/class-echo5-updater.php';
-    new Echo5_Updater(__FILE__);
+    $updater = new Echo5_Updater(__FILE__);
 }
 
 /**
