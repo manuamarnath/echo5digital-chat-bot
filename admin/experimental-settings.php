@@ -42,6 +42,15 @@ function echo5_chatbot_register_experimental_settings() {
         'echo5_chatbot_experimental',
         'echo5_chatbot_experimental_section'
     );
+
+    // Add webhook field
+    add_settings_field(
+        'telegram_webhook_url',
+        __('Telegram Webhook URL', 'echo5-ai-chatbot'),
+        'echo5_webhook_field_callback',
+        'echo5_chatbot_experimental',
+        'echo5_chatbot_experimental_section'
+    );
 }
 
 add_action('admin_init', 'echo5_chatbot_register_experimental_settings');
@@ -94,6 +103,53 @@ function echo5_chatbot_telegram_settings_callback() {
             <?php esc_html_e('These settings are required for the live agent feature to work with Telegram.', 'echo5-ai-chatbot'); ?>
         </p>
     </div>
+    <?php
+}
+
+function echo5_webhook_field_callback() {
+    $webhook_url = site_url('echo5-telegram-webhook');
+    ?>
+    <div class="webhook-container">
+        <input type="text" 
+               id="echo5-webhook-url" 
+               value="<?php echo esc_url($webhook_url); ?>" 
+               readonly 
+               class="regular-text">
+        <button type="button" 
+                class="button button-secondary" 
+                onclick="copyWebhookUrl()">
+            <?php esc_html_e('Copy URL', 'echo5-ai-chatbot'); ?>
+        </button>
+    </div>
+    <p class="description">
+        <?php esc_html_e('Use this webhook URL in your Telegram bot settings.', 'echo5-ai-chatbot'); ?>
+    </p>
+    <script>
+    function copyWebhookUrl() {
+        var copyText = document.getElementById("echo5-webhook-url");
+        copyText.select();
+        copyText.setSelectionRange(0, 99999);
+        document.execCommand("copy");
+        
+        var button = document.querySelector('.webhook-container button');
+        var originalText = button.innerHTML;
+        button.innerHTML = '<?php esc_html_e('Copied!', 'echo5-ai-chatbot'); ?>';
+        setTimeout(function() {
+            button.innerHTML = originalText;
+        }, 2000);
+    }
+    </script>
+    <style>
+    .webhook-container {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 5px;
+    }
+    #echo5-webhook-url {
+        background: #f0f0f1;
+    }
+    </style>
     <?php
 }
 
