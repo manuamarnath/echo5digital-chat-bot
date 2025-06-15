@@ -12,8 +12,7 @@
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: echo5-ai-chatbot
  * Domain Path: /languages
- * GitHub Plugin URI: manuamarnath/echo5digital-chat-bot
- * GitHub Branch: main
+ * GitHub Plugin URI: https://github.com/manuamarnath/echo5digital-chat-bot
  * Primary Branch: main
  */
 
