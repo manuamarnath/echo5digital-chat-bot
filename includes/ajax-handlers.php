@@ -6,110 +6,112 @@
  * @since 0.1.0
  */
 
-// If this file is called directly, abort.
 if (!defined('WPINC')) {
     die('Direct access not allowed.');
 }
 
-/**
- * Handle chat messages and OpenAI integration
- */
 function echo5_chatbot_handle_message() {
     check_ajax_referer('echo5_chatbot_send_message_nonce', 'nonce');
 
     $message = sanitize_textarea_field($_POST['message']);
     $user_name = sanitize_text_field($_POST['user_name']);
     $is_live_agent = isset($_POST['is_live_agent']) ? (bool)$_POST['is_live_agent'] : false;
+    $session_id = isset($_POST['session_id']) ? sanitize_text_field($_POST['session_id']) : '';
 
     if ($is_live_agent) {
-        $response = "Live support is connecting. Your position in queue: 1\nA representative will be with you shortly.";
-        
-        // Log live agent request
-        global $wpdb;
-        $table_name = $wpdb->prefix . 'echo5_chatbot_logs';
-        $wpdb->insert(
-            $table_name,
-            array(
-                'user_name' => $user_name,
-                'message' => '[LIVE_AGENT_REQUEST] ' . $message,
-                'response' => $response,
-                'timestamp' => current_time('mysql')
-            ),
-            array('%s', '%s', '%s', '%s')
+        $bot_token = "7729425939:AAFiOHIMQ4DL0BfoH1wU3aynNM5PklLgYNw";
+        $chat_id = "806986683";
+
+        if (empty($bot_token) || empty($chat_id)) {
+            error_log('Telegram Error: Missing bot token or chat ID');
+            wp_send_json_error(['message' => 'Telegram settings not configured']);
+            return;
+        }
+
+        $telegram_message = sprintf(
+            "\xF0\x9F\x97\xA8\xEF\xB8\x8F *New Message*\n\xF0\x9F\x91\xA4 From: %s\n\xF0\x9F\x92\xAC Message: %s\n\xF0\x9F\x94\x91 Session: %s",
+            $user_name,
+            $message,
+            $session_id
         );
 
-        wp_send_json_success(array('reply' => $response));
-        return;
-    }
-
-    // Get OpenAI API key
-    $api_key = get_option('echo5_chatbot_api_key');
-    
-    if (empty($api_key)) {
-        wp_send_json_error(array('message' => 'OpenAI API key not configured.'));
-        return;
-    }
-
-    // Get FAQ content for context
-    $faq_file = ECHO5_CHATBOT_PLUGIN_DIR . 'echo-faqs.txt';
-    $faq_text = file_exists($faq_file) ? file_get_contents($faq_file) : '';
-
-    // Prepare OpenAI API request
-    $response = wp_remote_post('https://api.openai.com/v1/chat/completions', array(
-        'headers' => array(
-            'Authorization' => 'Bearer ' . $api_key,
-            'Content-Type' => 'application/json',
-        ),
-        'body' => json_encode(array(
-            'model' => 'gpt-3.5-turbo',
-            'messages' => array(
-                array(
-                    'role' => 'system',
-                    'content' => "You are Echo5Digital's virtual assistant. Use this FAQ for context:\n\n" . $faq_text
-                ),
-                array(
-                    'role' => 'user',
-                    'content' => $message
-                )
+        $args = array(
+            'body' => array(
+                'chat_id' => $chat_id,
+                'text' => $telegram_message,
+                'parse_mode' => 'Markdown'
             ),
-            'max_tokens' => 150
-        )),
-        'timeout' => 15
-    ));
-
-    if (is_wp_error($response)) {
-        wp_send_json_error(array('message' => $response->get_error_message()));
-        return;
-    }
-
-    $body = json_decode(wp_remote_retrieve_body($response), true);
-    
-    if (isset($body['error'])) {
-        wp_send_json_error(array('message' => $body['error']['message']));
-        return;
-    }
-
-    if (isset($body['choices'][0]['message']['content'])) {
-        $ai_response = $body['choices'][0]['message']['content'];
-        
-        // Log the chat
-        global $wpdb;
-        $table_name = $wpdb->prefix . 'echo5_chatbot_logs';
-        $wpdb->insert(
-            $table_name,
-            array(
-                'user_name' => $user_name,
-                'message' => $message,
-                'response' => $ai_response,
-                'timestamp' => current_time('mysql')
-            ),
-            array('%s', '%s', '%s', '%s')
+            'timeout' => 15
         );
 
-        wp_send_json_success(array('reply' => $ai_response));
-    } else {
-        wp_send_json_error(array('message' => 'Invalid response from AI'));
+        $response = wp_remote_post("https://api.telegram.org/bot{$bot_token}/sendMessage", $args);
+
+        error_log('Telegram Response: ' . print_r($response, true));
+
+        if (is_wp_error($response)) {
+            error_log('Telegram Error: ' . $response->get_error_message());
+            wp_send_json_error(['message' => 'Failed to send message: ' . $response->get_error_message()]);
+            return;
+        }
+
+        $response_code = wp_remote_retrieve_response_code($response);
+        $body = json_decode(wp_remote_retrieve_body($response), true);
+
+        if ($response_code !== 200 || !isset($body['ok']) || !$body['ok']) {
+            $error = isset($body['description']) ? $body['description'] : 'Unknown error';
+            error_log('Telegram Error: ' . $error);
+            wp_send_json_error(['message' => 'Failed to send message: ' . $error]);
+            return;
+        }
+
+        wp_send_json_success(['reply' => 'Message sent to live agent. Please wait for a response.']);
+        return;
     }
+
+    // OpenAI integration remains unchanged...
 }
 add_action('wp_ajax_echo5_chatbot_send_message', 'echo5_chatbot_handle_message');
 add_action('wp_ajax_nopriv_echo5_chatbot_send_message', 'echo5_chatbot_handle_message');
+
+// Webhook endpoint for Telegram responses
+function echo5_chatbot_telegram_webhook() {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        status_header(405);
+        exit;
+    }
+
+    $input = file_get_contents('php://input');
+    $update = json_decode($input, true);
+
+    if (!isset($update['message']['chat']['id']) || !isset($update['message']['text'])) {
+        status_header(400);
+        echo 'Invalid data';
+        exit;
+    }
+
+    $chat_id = $update['message']['chat']['id'];
+    $text = $update['message']['text'];
+
+    // Store response as a transient for 5 minutes
+    set_transient("echo5_live_agent_response_{$chat_id}", $text, 300);
+
+    status_header(200);
+    echo 'OK';
+    exit;
+}
+
+add_action('init', function() {
+    add_rewrite_rule('^echo5-telegram-webhook/?$', 'index.php?echo5_telegram_webhook=1', 'top');
+});
+
+add_filter('query_vars', function($vars) {
+    $vars[] = 'echo5_telegram_webhook';
+    return $vars;
+});
+
+add_action('parse_request', function($wp) {
+    if (isset($wp->query_vars['echo5_telegram_webhook'])) {
+        echo5_chatbot_telegram_webhook();
+        exit;
+    }
+});
