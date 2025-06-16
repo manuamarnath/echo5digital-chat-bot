@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Handle clicks on the chat container when minimized
     elements.chatContainer.addEventListener('click', function(e) {
-        if (isMinimized) {
+        if (isMinimized && e.target.closest('#echo5-chat-container')) {
             maximizeChat();
             e.stopPropagation();
         }
@@ -49,18 +49,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Modify existing header click handler
     elements.chatHeader.addEventListener('click', function(e) {
-        if (!isMinimized || e.target === elements.minimizeButton) {
-            return;
-        }
-        maximizeChat();
         e.stopPropagation();
+        if (isMinimized && !e.target.closest('#echo5-minimize-button')) {
+            maximizeChat();
+        }
     });
 
     // Add helper functions for minimize/maximize
     function minimizeChat() {
         isMinimized = true;
         elements.chatContainer.classList.add('minimized');
-        clearTimeout(autoMaximizeTimeout); // Clear any pending auto-maximize
+        clearTimeout(autoMaximizeTimeout);
     }
 
     function maximizeChat() {
@@ -69,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (elements.messageInput) {
             setTimeout(() => elements.messageInput.focus(), 300);
         }
-        clearTimeout(autoMaximizeTimeout); // Clear any pending auto-maximize
+        clearTimeout(autoMaximizeTimeout);
     }
 
     // Verify required elements
@@ -165,9 +164,13 @@ document.addEventListener('DOMContentLoaded', function() {
         minimizeChat();
 
         // Set timeout to automatically maximize after 4 seconds
-        autoMaximizeTimeout = setTimeout(() => {
-            maximizeChat();
-        }, 4000);
+        setTimeout(() => {
+            autoMaximizeTimeout = setTimeout(() => {
+                if (isMinimized) {
+                    maximizeChat();
+                }
+            }, 4000);
+        }, 1000);
     }
 
     // Enable/disable chat functions
@@ -229,16 +232,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return div;
     }
 
-    // Add this function after the helper functions
-    function calculateTypingDelay(message) {
-        // Average reading speed (characters per millisecond)
-        const charsPerMs = 0.04;
-        // Base delay of 500ms + calculated time based on message length
-        const delay = 500 + (message.length / charsPerMs);
-        // Cap the maximum delay at 3 seconds
-        return Math.min(delay, 3000);
-    }
-
     // Modify the sendMessage function
     async function sendMessage() {
         const message = elements.messageInput.value.trim();
@@ -247,64 +240,74 @@ document.addEventListener('DOMContentLoaded', function() {
         displayUserMessage(message, userName);
         elements.messageInput.value = '';
         disableChat();
+
+        // Get typing indicator template
         const template = document.getElementById('echo5-typing-indicator-template');
-        if (!template) {('echo5-typing-indicator-template');
-            console.error('Typing indicator template not found');r('.echo5-typing-indicator');
-            return;        elements.chatMessages.appendChild(typingIndicator);
-        }gIndicator.style.display = 'block';
-        const typingIndicator = template.content.cloneNode(true).querySelector('.echo5-typing-indicator');ts.chatMessages.scrollHeight;
+        if (!template) {
+            console.error('Typing indicator template not found');
+            return;
+        }
+
+        // Add typing indicator
+        const typingIndicator = template.content.cloneNode(true).querySelector('.echo5-typing-indicator');
         if (!typingIndicator) {
             console.error('Typing indicator element not found in template');
-            return;nse = await jQuery.ajax({
+            return;
         }
+
+        // Show typing indicator before making the request
         elements.chatMessages.appendChild(typingIndicator);
         typingIndicator.style.display = 'block';
-        elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;ot_send_message',
-end_message_nonce,
+        elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
+
         try {
-            const response = await jQuery.ajax({   user_name: userName,
-                url: echo5_chatbot_data.ajax_url,     is_live_agent: isLiveAgent,
-                type: 'POST',                    session_id: chatSessionId
+            const response = await jQuery.ajax({
+                url: echo5_chatbot_data.ajax_url,
+                type: 'POST',
                 data: {
                     action: 'echo5_chatbot_send_message',
                     nonce: echo5_chatbot_data.send_message_nonce,
                     message: message,
                     user_name: userName,
-                    is_live_agent: isLiveAgent,   // Calculate and apply typing delay
-                    session_id: chatSessionId       const delay = calculateTypingDelay(response.data.reply);
-                }        await new Promise(resolve => setTimeout(resolve, delay));
+                    is_live_agent: isLiveAgent,
+                    session_id: chatSessionId
+                }
             });
 
-            if (response.success) {            
-                if (!isLiveAgent) {tor
-                    // Calculate and apply typing delay);
-                    const delay = calculateTypingDelay(response.data.reply);
-                    await new Promise(resolve => setTimeout(resolve, delay));esponse.success) {
-                }!isLiveAgent) {
-            }
-               }
-            // Remove typing indicator
-            typingIndicator.remove();ror: ' + (response.data?.message || 'Something went wrong'));
-
             if (response.success) {
-                if (!isLiveAgent) {ndicator.remove();
-                    displayBotMessage(response.data.reply);('AJAX error:', error);
-                }   displayBotMessage('Error: Could not connect to the server.');
-            } else {   } finally {
-                displayBotMessage('Error: ' + (response.data?.message || 'Something went wrong'));            enableChat();
+                if (!isLiveAgent) {
+                    // Calculate typing delay based on message length
+                    const delay = calculateTypingDelay(response.data.reply);
+                    // Keep typing indicator visible during the delay
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    // Remove typing indicator only after delay
+                    typingIndicator.remove();
+                    // Display the bot message
+                    displayBotMessage(response.data.reply);
+                }
+            } else {
+                typingIndicator.remove();
+                displayBotMessage('Error: ' + (response.data?.message || 'Something went wrong'));
             }
         } catch (error) {
             typingIndicator.remove();
-            console.error('AJAX error:', error);    // Initialize
+            console.error('AJAX error:', error);
+            displayBotMessage('Error: Could not connect to the server.');
+        } finally {
+            enableChat();
+        }
+    }
 
+    // Update the calculateTypingDelay function for more realistic timing
+    function calculateTypingDelay(message) {
+        // Average typing speed (characters per millisecond)
+        const charsPerMs = 0.03;
+        // Minimum delay of 800ms + calculated time based on message length
+        const delay = Math.max(800, message.length / charsPerMs);
+        // Cap the maximum delay at 4 seconds
+        return Math.min(delay, 4000);
+    }
 
-
-
-
-
-
-
-
-
-});    initializeChat();    // Initialize    }        }            enableChat();        } finally {            displayBotMessage('Error: Could not connect to the server.');    initializeChat();
+    // Initialize chat on document load
+    initializeChat();
 });
