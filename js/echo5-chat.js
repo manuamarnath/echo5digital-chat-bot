@@ -7,6 +7,9 @@
  * @since 0.1.0
  */
 document.addEventListener('DOMContentLoaded', function() {
+    // Define plugin URL constant if not defined
+    const ECHO5_CHATBOT_PLUGIN_URL = typeof echo5_chatbot_data !== 'undefined' ? echo5_chatbot_data.plugin_url : '';
+
     // DOM element references with error checking
     const elements = {
         chatContainer: document.getElementById('echo5-chat-container'),
@@ -244,54 +247,64 @@ document.addEventListener('DOMContentLoaded', function() {
         displayUserMessage(message, userName);
         elements.messageInput.value = '';
         disableChat();
-
         const template = document.getElementById('echo5-typing-indicator-template');
-        const typingIndicator = template.content.cloneNode(true).querySelector('.echo5-typing-indicator');
+        if (!template) {('echo5-typing-indicator-template');
+            console.error('Typing indicator template not found');r('.echo5-typing-indicator');
+            return;        elements.chatMessages.appendChild(typingIndicator);
+        }gIndicator.style.display = 'block';
+        const typingIndicator = template.content.cloneNode(true).querySelector('.echo5-typing-indicator');ts.chatMessages.scrollHeight;
+        if (!typingIndicator) {
+            console.error('Typing indicator element not found in template');
+            return;nse = await jQuery.ajax({
+        }
         elements.chatMessages.appendChild(typingIndicator);
         typingIndicator.style.display = 'block';
-        elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
-
+        elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;ot_send_message',
+end_message_nonce,
         try {
-            const response = await jQuery.ajax({
-                url: echo5_chatbot_data.ajax_url,
-                type: 'POST',
+            const response = await jQuery.ajax({   user_name: userName,
+                url: echo5_chatbot_data.ajax_url,     is_live_agent: isLiveAgent,
+                type: 'POST',                    session_id: chatSessionId
                 data: {
                     action: 'echo5_chatbot_send_message',
                     nonce: echo5_chatbot_data.send_message_nonce,
                     message: message,
                     user_name: userName,
-                    is_live_agent: isLiveAgent,
-                    session_id: chatSessionId
-                }
+                    is_live_agent: isLiveAgent,   // Calculate and apply typing delay
+                    session_id: chatSessionId       const delay = calculateTypingDelay(response.data.reply);
+                }        await new Promise(resolve => setTimeout(resolve, delay));
             });
 
-            if (response.success) {
-                if (!isLiveAgent) {
-                    // Calculate and apply typing delay
+            if (response.success) {            
+                if (!isLiveAgent) {tor
+                    // Calculate and apply typing delay);
                     const delay = calculateTypingDelay(response.data.reply);
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                }
+                    await new Promise(resolve => setTimeout(resolve, delay));esponse.success) {
+                }!isLiveAgent) {
             }
-            
+               }
             // Remove typing indicator
-            typingIndicator.remove();
+            typingIndicator.remove();ror: ' + (response.data?.message || 'Something went wrong'));
 
             if (response.success) {
-                if (!isLiveAgent) {
-                    displayBotMessage(response.data.reply);
-                }
-            } else {
-                displayBotMessage('Error: ' + (response.data?.message || 'Something went wrong'));
+                if (!isLiveAgent) {ndicator.remove();
+                    displayBotMessage(response.data.reply);('AJAX error:', error);
+                }   displayBotMessage('Error: Could not connect to the server.');
+            } else {   } finally {
+                displayBotMessage('Error: ' + (response.data?.message || 'Something went wrong'));            enableChat();
             }
         } catch (error) {
             typingIndicator.remove();
-            console.error('AJAX error:', error);
-            displayBotMessage('Error: Could not connect to the server.');
-        } finally {
-            enableChat();
-        }
-    }
+            console.error('AJAX error:', error);    // Initialize
 
-    // Initialize
-    initializeChat();
+
+
+
+
+
+
+
+
+
+});    initializeChat();    // Initialize    }        }            enableChat();        } finally {            displayBotMessage('Error: Could not connect to the server.');    initializeChat();
 });

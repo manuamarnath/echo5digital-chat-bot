@@ -23,6 +23,7 @@ if ( ! defined( 'WPINC' ) ) {
 // Define plugin constants.
 define( 'ECHO5_CHATBOT_VERSION', '0.1.1' );
 define( 'ECHO5_CHATBOT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+define( 'ECHO5_CHATBOT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
 // Initialize the updater
 if (is_admin()) {
@@ -526,3 +527,97 @@ function echo5_test_api_key_handler() {
     }
 }
 add_action('wp_ajax_echo5_test_api_key', 'echo5_test_api_key_handler');
+
+/**
+ * Renders the chat logs page HTML.
+ *
+ * This function outputs the HTML for the chat logs page, including the search form
+ * and the table of chat logs. It handles search functionality and displays results
+ * based on the search criteria.
+ *
+ * @since 0.1.2
+ */
+function echo5_chatbot_chat_logs_page_html() {
+    global $wpdb;
+
+    // Initialize search variables
+    $search_term = isset($_GET['search']) ? sanitize_text_field($_GET['search']) : '';
+    $date_from = isset($_GET['date_from']) ? sanitize_text_field($_GET['date_from']) : '';
+    $date_to = isset($_GET['date_to']) ? sanitize_text_field($_GET['date_to']) : '';
+
+    // Prepare the query to fetch chat logs
+    $query = "SELECT * FROM {$wpdb->prefix}echo5_chatbot_logs WHERE 1=1";
+    $query_params = array();
+
+    // Add search term condition if provided
+    if ( ! empty( $search_term ) ) {
+        $query .= " AND (user_name LIKE %s OR message LIKE %s OR response LIKE %s)";
+        $query_params[] = '%' . $wpdb->esc_like( $search_term ) . '%';
+        $query_params[] = '%' . $wpdb->esc_like( $search_term ) . '%';
+        $query_params[] = '%' . $wpdb->esc_like( $search_term ) . '%';
+    }
+
+    // Add date range condition if both dates are provided
+    if ( ! empty( $date_from ) && ! empty( $date_to ) ) {
+        $query .= " AND timestamp BETWEEN %s AND %s";
+        $query_params[] = $date_from . ' 00:00:00';
+        $query_params[] = $date_to . ' 23:59:59';
+    }
+
+    // Prepare and execute the query
+    $query = $wpdb->prepare( $query, $query_params );
+    $chat_logs = $wpdb->get_results( $query );
+
+    // Output the HTML for the chat logs page
+    ?>
+    <div class="wrap">
+        <h1><?php esc_html_e( 'Chat Logs', 'echo5-ai-chatbot' ); ?></h1>
+
+        <form method="get" action="">
+            <input type="hidden" name="page" value="echo5_chatbot_logs">
+            <p>
+                <label for="search"><?php esc_html_e( 'Search:', 'echo5-ai-chatbot' ); ?></label>
+                <input type="text" name="search" id="search" value="<?php echo esc_attr( $search_term ); ?>">
+            </p>
+            <p>
+                <label for="date_from"><?php esc_html_e( 'Date From:', 'echo5-ai-chatbot' ); ?></label>
+                <input type="date" name="date_from" id="date_from" value="<?php echo esc_attr( $date_from ); ?>">
+            </p>
+            <p>
+                <label for="date_to"><?php esc_html_e( 'Date To:', 'echo5-ai-chatbot' ); ?></label>
+                <input type="date" name="date_to" id="date_to" value="<?php echo esc_attr( $date_to ); ?>">
+            </p>
+            <p>
+                <input type="submit" class="button" value="<?php esc_attr_e( 'Search', 'echo5-ai-chatbot' ); ?>">
+            </p>
+        </form>
+
+        <?php if ( ! empty( $chat_logs ) ) : ?>
+            <table class="widefat fixed">
+                <thead>
+                    <tr>
+                        <th><?php esc_html_e( 'ID', 'echo5-ai-chatbot' ); ?></th>
+                        <th><?php esc_html_e( 'User Name', 'echo5-ai-chatbot' ); ?></th>
+                        <th><?php esc_html_e( 'Message', 'echo5-ai-chatbot' ); ?></th>
+                        <th><?php esc_html_e( 'Response', 'echo5-ai-chatbot' ); ?></th>
+                        <th><?php esc_html_e( 'Timestamp', 'echo5-ai-chatbot' ); ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ( $chat_logs as $log ) : ?>
+                        <tr>
+                            <td><?php echo esc_html( $log->id ); ?></td>
+                            <td><?php echo esc_html( $log->user_name ); ?></td>
+                            <td><?php echo esc_html( $log->message ); ?></td>
+                            <td><?php echo esc_html( $log->response ); ?></td>
+                            <td><?php echo esc_html( $log->timestamp ); ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php else : ?>
+            <p><?php esc_html_e( 'No chat logs found.', 'echo5-ai-chatbot' ); ?></p>
+        <?php endif; ?>
+    </div>
+    <?php
+}

@@ -117,3 +117,28 @@ add_action('parse_request', function($wp) {
         exit;
     }
 });
+
+function echo5_check_live_agent_responses() {
+    global $wpdb;
+    check_ajax_referer('echo5_chatbot_send_message_nonce', 'nonce');
+
+    $session_id = isset($_POST['session_id']) ? sanitize_text_field($_POST['session_id']) : '';
+    if (empty($session_id)) {
+        wp_send_json_error(['message' => 'Invalid session ID']);
+        return;
+    }
+
+    $response = get_transient("echo5_live_agent_response_{$session_id}");
+
+    if ($response === false) {
+        wp_send_json_error(['message' => 'No new responses']);
+        return;
+    }
+
+    // Delete the transient after retrieving the response
+    delete_transient("echo5_live_agent_response_{$session_id}");
+
+    wp_send_json_success(['reply' => $response]);
+}
+add_action('wp_ajax_echo5_check_live_agent_responses', 'echo5_check_live_agent_responses');
+add_action('wp_ajax_nopriv_echo5_check_live_agent_responses', 'echo5_check_live_agent_responses');
